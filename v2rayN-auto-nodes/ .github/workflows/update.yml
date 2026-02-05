@@ -1,0 +1,6 @@
+v2rayN-auto-nodes/
+├── .github/
+│   └── workflows/
+│       └── update.yml
+├── fetch_nodes.py
+└── v2rayN_nodes.txt
