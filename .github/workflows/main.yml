@@ -8,9 +8,8 @@ on:
 permissions:
   contents: write
 
-# 🔥 关键：禁止并发（防止自己打自己）
 concurrency:
-  group: v2rayN-update
+  group: v2rayN-nodes
   cancel-in-progress: true
 
 jobs:
@@ -18,11 +17,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
-          persist-credentials: true
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -32,20 +31,19 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Fetch v2rayN nodes
+      - name: Generate nodes
         run: python fetch_nodes.py
 
-      - name: Commit & push (safe force)
+      - name: Push to nodes branch only
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
 
-          git fetch origin main
-          git checkout main
-          git rebase origin/main || git rebase --abort
+          git checkout --orphan nodes
+          git rm -rf .
+          mv v2rayN_nodes.txt .
 
           git add v2rayN_nodes.txt
-          git commit -m "auto update v2rayN nodes" || echo "no changes"
+          git commit -m "auto update v2rayN nodes"
 
-          # 🔥 核心：安全强推（不会覆盖别人新提交）
-          git push origin main --force-with-lease
+          git push origin nodes --force
