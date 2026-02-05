@@ -11,7 +11,7 @@ jobs:
 
     steps:
       # --------------------------
-      # 检出 nodes 分支
+      # checkout nodes 分支
       # --------------------------
       - uses: actions/checkout@v4
         with:
@@ -24,7 +24,7 @@ jobs:
           git checkout -B nodes origin/main
 
       # --------------------------
-      # 设置 Python 环境
+      # 设置 Python
       # --------------------------
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -41,93 +41,51 @@ jobs:
       # --------------------------
       - name: Fetch and generate nodes
         run: |
-          # 创建 fetch_nodes.py
+          # 写入 fetch_nodes.py
           cat << 'EOF' > fetch_nodes.py
 import requests
 import re
-import socket
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 sources = [
     "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/refs/heads/main/all_extracted_configs.txt",
     "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/refs/heads/main/vmess_configs.txt",
     "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/refs/heads/main/trojan_configs.txt",
-    "https://github.com/Epodonios/v2ray-configs/raw/main/All_Configs_Sub.txt",
-    "https://github.com/Epodonios/v2ray-configs/raw/main/Splitted-By-Protocol/vmess.txt",
-    "https://raw.githubusercontent.com/MatinGhanbari/v2ray-configs/main/subscriptions/v2ray/all_sub.txt",
-    "https://raw.githubusercontent.com/pourih/pfs-servers-list/refs/heads/main/pfs_servers.txt",
-    "https://git.hubp.de/raw-githubusercontent-com/F0rc3Run/F0rc3Run/refs/heads/main/Best-Results/proxies.txt",
 ]
+headers={"User-Agent":"Mozilla/5.0"}
 
-def classify_node(node: str):
-    node = node.strip()
-    if node.startswith("vmess://"):
-        return "vmess"
-    elif node.startswith("trojan://"):
-        return "trojan"
-    elif node.startswith("trojan-go://"):
-        return "trojan-go"
-    else:
-        return "unknown"
+def classify_node(node:str):
+    node=node.strip()
+    if node.startswith("vmess://"): return "vmess"
+    if node.startswith("trojan://"): return "trojan"
+    if node.startswith("trojan-go://"): return "trojan-go"
+    return "unknown"
 
-def is_alive(node: str) -> bool:
-    try:
-        node_type = classify_node(node)
-        if node_type == "vmess":
-            return True
-        elif node_type in ["trojan", "trojan-go"]:
-            match = re.match(r".*://([^:@]+)(?::(\d+))?", node)
-            if match:
-                host = match.group(1)
-                port = int(match.group(2)) if match.group(2) else 443
-                sock = socket.create_connection((host, port), timeout=3)
-                sock.close()
-                return True
-        return False
-    except Exception:
-        return False
-
-all_nodes = set()
+all_nodes=set()
 for url in sources:
     try:
-        resp = requests.get(url, timeout=10)
-        for line in resp.text.splitlines():
-            line = line.strip()
-            if line:
-                all_nodes.add(line)
-    except Exception:
-        pass
+        r=requests.get(url,headers=headers,timeout=10)
+        lines=[l.strip() for l in r.text.splitlines() if l.strip()]
+        print(f"[DEBUG] {url} fetched {len(lines)} lines")
+        all_nodes.update(lines)
+    except Exception as e:
+        print(f"[WARN] Failed to fetch {url}: {e}")
 
-alive_nodes = []
-max_workers = 20
-def check_node(node):
-    if classify_node(node) != "unknown" and is_alive(node):
-        return node
-    return None
+vmess_nodes=[n for n in all_nodes if classify_node(n)=="vmess"]
+trojan_nodes=[n for n in all_nodes if classify_node(n)=="trojan"]
+trojan_go_nodes=[n for n in all_nodes if classify_node(n)=="trojan-go"]
 
-with ThreadPoolExecutor(max_workers=max_workers) as executor:
-    future_to_node = {executor.submit(check_node, node): node for node in all_nodes}
-    for future in as_completed(future_to_node):
-        result = future.result()
-        if result:
-            alive_nodes.append(result)
-
-vmess_nodes = [n for n in alive_nodes if classify_node(n) == "vmess"]
-trojan_nodes = [n for n in alive_nodes if classify_node(n) == "trojan"]
-trojan_go_nodes = [n for n in alive_nodes if classify_node(n) == "trojan-go"]
-
-def write_txt(filename, nodes):
-    with open(filename, "w", encoding="utf-8") as f:
+def write_txt(filename,nodes):
+    with open(filename,"w",encoding="utf-8") as f:
         for n in nodes:
-            f.write(n + "\n")
+            f.write(n+"\n")
+    print(f"[INFO] {filename} generated with {len(nodes)} nodes")
 
-write_txt("v2rayN_nodes.txt", alive_nodes)
-write_txt("vmess.txt", vmess_nodes)
-write_txt("trojan.txt", trojan_nodes)
-write_txt("trojan-go.txt", trojan_go_nodes)
+write_txt("v2rayN_nodes.txt",all_nodes)
+write_txt("vmess.txt",vmess_nodes)
+write_txt("trojan.txt",trojan_nodes)
+write_txt("trojan-go.txt",trojan_go_nodes)
 EOF
 
-          # 执行抓节点脚本
           python fetch_nodes.py
 
       # --------------------------
