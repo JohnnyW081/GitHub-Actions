@@ -31,10 +31,9 @@ jobs:
         with:
           python-version: '3.x'
 
-      # 安装依赖
+      # 安装 requests
       - name: Install dependencies
-        run: |
-          pip install requests
+        run: pip install requests
 
       # --------------------------
       # 下载并执行抓节点脚本
@@ -89,7 +88,7 @@ EOF
           python fetch_nodes.py
 
       # --------------------------
-      # 提交并 push nodes 分支
+      # Commit & Push nodes 分支
       # --------------------------
       - name: Commit and push
         run: |
