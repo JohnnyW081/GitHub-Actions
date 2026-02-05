@@ -8,6 +8,14 @@ sources = [
     "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/refs/heads/main/all_extracted_configs.txt",
     "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/refs/heads/main/vmess_configs.txt",
     "https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/refs/heads/main/trojan_configs.txt",
+    " https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/refs/heads/main/all_extracted_configs.txt ",
+" https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/refs/heads/main/vmess_configs.txt ",
+" https://raw.githubusercontent.com/ebrasha/free-v2ray-public-list/refs/heads/main/trojan_configs.txt ",
+" https://github.com/Epodonios/v2ray-configs/raw/main/All_Configs_Sub.txt ",
+" https://github.com/Epodonios/v2ray-configs/raw/main/Splitted-By-Protocol/vmess.txt ",
+" https://raw.githubusercontent.com/MatinGhanbari/v2ray-configs/main/subscriptions/v2ray/all_sub.txt ",
+" https://raw.githubusercontent.com/pourih/pfs-servers-list/refs/heads/main/pfs_servers.txt ",
+" https://git.hubp.de/raw-githubusercontent-com/F0rc3Run/F0rc3Run/refs/heads/main/Best-Results/proxies.txt "
 ]
 
 headers = {"User-Agent": "Mozilla/5.0"}
