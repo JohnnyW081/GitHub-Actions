@@ -2,8 +2,6 @@ name: Update v2rayN nodes
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 3 * * *"
 
 jobs:
   update:
@@ -13,14 +11,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT }}
+          fetch-depth: 0
 
       - run: |
-          python fetch_nodes.py
+          # 强制与远端 main 完全一致
+          git fetch origin main
+          git reset --hard origin/main
+
+          echo "test $(date)" > v2rayN_nodes.txt
 
           git config user.name "JohnnyW081"
           git config user.email "actions@github.com"
-
-          git pull --rebase origin main
 
           git add v2rayN_nodes.txt
           git commit -m "auto update v2rayN nodes" || echo "no changes"
