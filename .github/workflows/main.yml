@@ -2,9 +2,8 @@ name: Update v2rayN nodes
 
 on:
   workflow_dispatch:
-
-permissions:
-  contents: write
+  schedule:
+    - cron: "0 3 * * *"
 
 jobs:
   update:
@@ -12,16 +11,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
 
       - run: |
           echo "test $(date)" > v2rayN_nodes.txt
 
-          git config user.name "github-actions"
+          git config user.name "JohnnyW081"
           git config user.email "actions@github.com"
 
-          git checkout -B nodes
-
           git add v2rayN_nodes.txt
-          git commit -m "update nodes"
+          git commit -m "auto update v2rayN nodes" || echo "no changes"
 
-          git push origin nodes --force
+          git push
