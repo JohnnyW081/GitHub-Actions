@@ -1,0 +1,29 @@
+name: Update v2rayN nodes
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+          fetch-depth: 0
+
+      - run: |
+          # 永远从远端 main 初始化
+          git fetch origin main
+          git checkout -B nodes origin/main
+
+          echo "test $(date)" > v2rayN_nodes.txt
+
+          git config user.name "JohnnyW081"
+          git config user.email "actions@github.com"
+
+          git add v2rayN_nodes.txt
+          git commit -m "auto update v2rayN nodes" || echo "no changes"
+
+          git push origin nodes --force
