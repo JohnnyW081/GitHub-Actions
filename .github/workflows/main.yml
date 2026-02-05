@@ -15,12 +15,14 @@ jobs:
           token: ${{ secrets.GH_PAT }}
 
       - run: |
-          echo "test $(date)" > v2rayN_nodes.txt
+          python fetch_nodes.py
 
           git config user.name "JohnnyW081"
           git config user.email "actions@github.com"
 
+          git pull --rebase origin main
+
           git add v2rayN_nodes.txt
           git commit -m "auto update v2rayN nodes" || echo "no changes"
 
-          git push
+          git push origin main
