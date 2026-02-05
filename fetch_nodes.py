@@ -1,26 +1,45 @@
-import requests, re
+import requests
+import re
 
 SOURCES = [
     "https://raw.githubusercontent.com/freefq/free/master/v2",
     "https://raw.githubusercontent.com/aiboboxx/v2rayfree/main/v2",
+    "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/v2ray.txt",
+    "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.txt",
 ]
 
-nodes = set()
+TIMEOUT = 15
 
-for url in SOURCES:
-    print("Fetching:", url)
+def fetch(url):
     try:
-        r = requests.get(url, timeout=15)
-        print("Status:", r.status_code, "Size:", len(r.text))
-        data = r.text
+        r = requests.get(url, timeout=TIMEOUT)
+        if r.status_code == 200 and r.text.strip():
+            print(f"[OK] {url} ({len(r.text)})")
+            return r.text
+        else:
+            print(f"[EMPTY] {url}")
     except Exception as e:
-        print("Error:", e)
-        continue
+        print(f"[FAIL] {url} -> {e}")
+    return ""
 
-    nodes.update(re.findall(r"vmess://[A-Za-z0-9+/=]+", data))
-    nodes.update(re.findall(r"trojan://[^\s]+", data))
+def main():
+    nodes = set()
 
-print("Total nodes:", len(nodes))
+    for url in SOURCES:
+        data = fetch(url)
+        if not data:
+            continue
 
-with open("v2rayN_nodes.txt", "w", encoding="utf-8") as f:
-    f.write("\n".join(nodes))
+        vmess = re.findall(r"vmess://[A-Za-z0-9+/=]+", data)
+        trojan = re.findall(r"trojan://[^\s]+", data)
+
+        for n in vmess + trojan:
+            nodes.add(n.strip())
+
+    print(f"[TOTAL] {len(nodes)} nodes")
+
+    with open("v2rayN_nodes.txt", "w", encoding="utf-8") as f:
+        f.write("\n".join(sorted(nodes)))
+
+if __name__ == "__main__":
+    main()
