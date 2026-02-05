@@ -1,49 +1,25 @@
-name: Update v2rayN nodes
+name: Test Push
 
 on:
-  schedule:
-    - cron: "0 0 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
 
-concurrency:
-  group: v2rayN-nodes
-  cancel-in-progress: true
-
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout main
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+      - run: |
+          echo "test $(date)" > v2rayN_nodes.txt
 
-      - name: Install dependencies
-        run: pip install requests
-
-      - name: Generate nodes
-        run: python fetch_nodes.py
-
-      - name: Push to nodes branch only
-        run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
 
-          git checkout --orphan nodes
-          git rm -rf .
-          mv v2rayN_nodes.txt .
-
           git add v2rayN_nodes.txt
-          git commit -m "auto update v2rayN nodes"
+          git commit -m "test push from actions"
 
-          git push origin nodes --force
+          git push origin HEAD:main --force
